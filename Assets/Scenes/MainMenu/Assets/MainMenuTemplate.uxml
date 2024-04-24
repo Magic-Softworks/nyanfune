@@ -1,0 +1,7 @@
+<ui:UXML xmlns:ui="UnityEngine.UIElements" xmlns:uie="UnityEditor.UIElements" xsi="http://www.w3.org/2001/XMLSchema-instance" engine="UnityEngine.UIElements" editor="UnityEditor.UIElements" noNamespaceSchemaLocation="../../../../UIElementsSchema/UIElements.xsd" editor-extension-mode="False">
+    <Style src="project://database/Assets/Scenes/MainMenu/Assets/styles.uss?fileID=7433441132597879392&amp;guid=5be4385eaeeaeee428c6249d54416b41&amp;type=3#styles" />
+    <ui:VisualElement name="MainMenuBackground" style="flex-grow: 1; background-color: rgba(160, 44, 192, 0); justify-content: center; align-items: center;">
+        <ui:Button text="Start New Game" display-tooltip-when-elided="true" name="StartGameButton" class="MenuButton" />
+        <ui:Button text="Settings Button" display-tooltip-when-elided="true" name="SettingsButton" />
+    </ui:VisualElement>
+</ui:UXML>

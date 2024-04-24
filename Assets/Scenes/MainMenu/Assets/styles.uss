@@ -1,0 +1,16 @@
+
+/* This does not get dispalyed and I have no idea why.
+Workaround was setting camera's background to a solid color. */
+#StartMenuBackground {
+    background-color: #A02CC0;
+}
+
+.MenuButton { 
+    border-width: 0;
+    background-color: #FFF;
+}
+
+.MenuButton:hover { 
+    background-color: #AAA;
+}
+
