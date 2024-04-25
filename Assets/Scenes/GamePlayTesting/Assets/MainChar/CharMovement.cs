@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
-
+using Game.Constants;
 public class CharMovement : MonoBehaviour
 {
     private CharacterController _controller;
@@ -16,6 +16,11 @@ public class CharMovement : MonoBehaviour
     private InputAction _moveAction;
     private InputAction _lookAction;
     private bool connected = false;
+    
+    public GameObject associatedCrosshair;
+    
+    private LineRenderer lineRenderer;
+
 
     //InputAction interactAction;
 
@@ -149,6 +154,20 @@ public class CharMovement : MonoBehaviour
     private void Start()
     {
         _controller = GetComponent<CharacterController>();
+        
+        
+        if (GameConstants.Debug)
+        {
+            // Add LineRenderer and configure it
+            lineRenderer = GetComponent<LineRenderer>();
+            // lineRenderer.startColor = Color.white;
+            // lineRenderer.endColor = Color.white;
+            // lineRenderer.startWidth = 0.05f;
+            // lineRenderer.endWidth = 0.05f;
+            // lineRenderer.positionCount = 2; 
+        }
+        
+        
         PlayerInput input = FindObjectOfType<PlayerInput>();
         Debug.Log(input.currentControlScheme);
         for(int i = 0; i < Gamepad.all.Count; i++)
@@ -156,22 +175,55 @@ public class CharMovement : MonoBehaviour
             Debug.Log(Gamepad.all[i].name);
         }
     }
+
+
+    void MoveTank()
+    {
+        Vector3 moveChar = new Vector3(_moveAction.ReadValue<Vector2>().x, 0, _moveAction.ReadValue<Vector2>().y);
+        _controller.Move(Time.deltaTime * playerSpeed * moveChar);
+        
+        if (moveChar != Vector3.zero)
+        {
+            //moves the literal gameObject associated with this script
+            gameObject.transform.forward = moveChar;
+        }
+        //Y Vector Space Value
+        _playerVelocity.y += GravityValue * Time.deltaTime;
+        //Relative movement, not absolute, 3D vector Space movement
+        _controller.Move(_playerVelocity * Time.deltaTime);
+    }
+
+    void MoveCrosshair()
+    {
+        //TODO: EXPLAIN WHY THIS WORKS
+        Vector3 moveCharCrosshair = new Vector3(_lookAction.ReadValue<Vector2>().x, 0, _lookAction.ReadValue<Vector2>().y);
+        if (moveCharCrosshair != Vector3.zero)
+        {
+            // Convert input into a direction vector appropriate for movement
+            Vector3 moveDirection = new Vector3(moveCharCrosshair.x, 0, moveCharCrosshair.z) * playerSpeed;
+            associatedCrosshair.transform.position += moveDirection * Time.deltaTime; // Move associatedCrosshair
+        }
+    }
+    
+    
+    void UpdateLineRenderer()
+    {
+        if (lineRenderer != null && associatedCrosshair != null)
+        {
+            // Set the positions for the line renderer
+            lineRenderer.SetPosition(0, transform.position);
+            lineRenderer.SetPosition(1, associatedCrosshair.transform.position);
+        }
+    }
     
     void FixedUpdate()
     {
-        Vector3 move = new Vector3(_moveAction.ReadValue<Vector2>().x, 0, _moveAction.ReadValue<Vector2>().y);
-        _controller.Move(Time.deltaTime * playerSpeed * move);
-        
-        if (move != Vector3.zero)
+        MoveTank();
+        MoveCrosshair();
+        if (GameConstants.Debug)
         {
-            gameObject.transform.forward = move;
+            UpdateLineRenderer();
         }
-        
-        //Y Vector Space Value
-        _playerVelocity.y += GravityValue * Time.deltaTime;
-        
-        //Relative movement, not absolute, 3D vector Space movement
-        _controller.Move(_playerVelocity * Time.deltaTime);
 
     }
 }
