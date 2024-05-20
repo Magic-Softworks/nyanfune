@@ -4,14 +4,42 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
 using Game.Constants;
-public class CharMovement : MonoBehaviour
+
+public interface IPlayerActions
 {
+    void OnMove(InputAction.CallbackContext context);
+    void OnLook(InputAction.CallbackContext context);
+    void OnFire(InputAction.CallbackContext context);
+    void OnInteract(InputAction.CallbackContext context);
+    void OnInspect(InputAction.CallbackContext context);
+    void OnBack(InputAction.CallbackContext context);
+    void OnSquare(InputAction.CallbackContext context);
+    void OnOptions(InputAction.CallbackContext context);
+    void OnDPadUp(InputAction.CallbackContext context);
+    void OnDPadDown(InputAction.CallbackContext context);
+    void OnDPadLeft(InputAction.CallbackContext context);
+    void OnDPadRight(InputAction.CallbackContext context);
+}
+
+public class CharMovement : MonoBehaviour, PlayerInputActions.IPlayerActions
+{
+
     private CharacterController _controller;
     private Vector3 _playerVelocity;
     public float playerSpeed = 5.0f;
     private const float GravityValue = -9.81f;
+    public GameObject objectPrefab;
 
-    //private PlayerInputActions _playerInputActions;
+    private GameObject obj;
+    private List<bullet> bullets;
+    int bullet_lim = 4;
+    public static Vector3 movement_vector;
+    public static Vector3 position_vector;
+    private Vector3 start_vector;
+    private Vector3 end_vector;
+    private Bounds bounds;
+
+    private PlayerInputActions _playerInputActions;
 
     // private InputAction _moveAction;
     // private InputAction _lookAction;
@@ -24,6 +52,21 @@ public class CharMovement : MonoBehaviour
     private Vector3 moveValue;
 
     private Vector3 moveCharCrosshair;
+    private void Awake()
+    {
+        _playerInputActions = new PlayerInputActions();
+        _playerInputActions.Player.SetCallbacks(this);
+    }
+
+    private void OnEnable()
+    {
+        _playerInputActions.Player.Enable();
+    }
+
+    private void OnDisable()
+    {
+        _playerInputActions.Player.Disable();
+    }
 
     //InputAction interactAction;
 
@@ -116,19 +159,50 @@ public class CharMovement : MonoBehaviour
     public void OnInteract(InputAction.CallbackContext context)
     {
         print("x button pressed");
+        
+        if (bullets.Count <= this.bullet_lim)
+        {
+            Vector3 movement_vector = (end_vector - start_vector).normalized;
+            
+            bullets.Add(new bullet( gameObject.transform.position, movement_vector));
+        }
+    }
+    public void OnFire(InputAction.CallbackContext context)
+    {
+        print("fire b pressed");
+        
     }
     
+    public void OnLook(InputAction.CallbackContext context)
+    {
+        //print("fire b pressed");
+        
+    }
+    
+    public void OnMove(InputAction.CallbackContext context)
+    {
+        //print("fire b pressed");
+        
+    }
+    public void OnShare(InputAction.CallbackContext context)
+    {
+        print("fire b pressed");
+        
+    }
+    public void OnInspect(InputAction.CallbackContext context)
+    {
+        print("triangle button pressed");
+        
+    }
     public void OnBack(InputAction.CallbackContext context)
     {
         print("circle button pressed");
     }
     
-    public void OnTriangle(InputAction.CallbackContext context)
-    {
-        print("triangle button pressed");
-    }
     public void OnSquare(InputAction.CallbackContext context)
     {
+        print("square buttonADJUISHDIUHSAIUHUFID");
+
         print("square button pressed");
     }
     
@@ -145,6 +219,7 @@ public class CharMovement : MonoBehaviour
     public void OnDPadDown(InputAction.CallbackContext context)
     {
         print("dpad down button pressed");
+       ///Debug.Log(bullets.Count);
     }
     
     public void OnDPadLeft(InputAction.CallbackContext context)
@@ -159,6 +234,10 @@ public class CharMovement : MonoBehaviour
 
     private void Start()
     {
+        bounds = new Bounds(new Vector3(0, 0, 0), new Vector3(20, 10, 10));
+
+        bullets = new List<bullet>();
+        
         _controller = GetComponent<CharacterController>();
         
         
@@ -244,7 +323,11 @@ public class CharMovement : MonoBehaviour
         {
             // Set the positions for the line renderer
             lineRenderer.SetPosition(0, transform.position);
+            //start_vector = transform.position;
             lineRenderer.SetPosition(1, associatedCrosshair.transform.position);
+            //end_vector = associatedCrosshair.transform.position;
+            
+            
         }
     }
     
@@ -259,5 +342,36 @@ public class CharMovement : MonoBehaviour
             UpdateLineRenderer();
         }
 
+        update_bullets();
+
     }
+    
+    private void update_bullets()
+    {
+        List<int> indices = new List<int>();
+        foreach (bullet bullet in this.bullets)
+        {
+
+            
+            if (!bounds.Contains(bullet.get_position()))
+            {
+                indices.Add(this.bullets.IndexOf(bullet));
+            }
+            else
+            {
+                Debug.Log("updating");
+
+                bullet.move();
+            }
+            
+        }
+
+        foreach (int index in indices)
+        {
+            this.bullets[index].delete();
+            this.bullets.RemoveAt(index);
+
+        }
+    }
+
 }
